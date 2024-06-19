@@ -1,0 +1,49 @@
+# version: '3.8'
+
+services:
+  app:
+    container_name: microbes-talk-webapp
+    # hostname: ${hostname_ollama}
+    build:
+      dockerfile: ./Dockerfile.webapp
+    env_file:
+      - .env
+    ports:
+      - "${port_mapping}"
+    labels:  # What is this? we leave it and then test if it's necessary
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: always
+    depends_on:
+      - embeddings-db
+    volumes:
+      - ./app/indexes:/app/app/indexes  # Synchronize with the 'indexes' directory in your repo
+      - ./app:/app/app  # Ensure the current directory is correctly mounted
+
+  embeddings-db:
+    container_name: microbes-talk-db
+    platform: linux/x86_64  # Specify platform for emulation
+    image: mysql:5.7  #TODO improve it to latest versioin later
+    environment:
+      MYSQL_ROOT_PASSWORD: "${root_pw}"
+      MYSQL_DATABASE: "${db_name}"
+      MYSQL_USER: "${db_user}"
+    ports:
+      - "3306"
+
+  ollama:
+    container_name: microbes-talk-ollama
+    hostname: ${hostname_ollama}
+    build:
+      dockerfile: ./Dockerfile.ollama
+    labels:  # What is this? we leave it and then test if it's necessary
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: always
+    environment:
+      DEFAULT_LLM_MODEL: "${llm_model}"
+    ports:
+      - 11434:11434
+
+    
+volumes:
+  index_volume:
+    driver: local

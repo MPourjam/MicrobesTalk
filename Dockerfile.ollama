@@ -1,0 +1,9 @@
+# Use an official Python runtime as a parent image
+FROM ollama/ollama:0.1.45-rc3
+
+
+# Set environment variables
+RUN /usr/bin/ollama pull llama3:latest
+
+# Run command
+CMD ["/usr/bin/ollama", "serve", "llama3:latest"]
